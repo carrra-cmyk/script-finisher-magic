@@ -9,9 +9,30 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CATEGORIES } from "@/data/categories";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export function CategoryDropdown() {
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("categories")
+        .select("*")
+        .order("display_order");
+      
+      if (error) throw error;
+      
+      const parents = data.filter(c => !c.parent_id);
+      const children = data.filter(c => c.parent_id);
+      
+      return parents.map(parent => ({
+        ...parent,
+        items: children.filter(c => c.parent_id === parent.id)
+      }));
+    },
+  });
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -21,16 +42,16 @@ export function CategoryDropdown() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-64 max-h-[500px] overflow-y-auto bg-card z-50">
-        {Object.entries(CATEGORIES).map(([key, category], index) => (
-          <DropdownMenuGroup key={key}>
+        {categories.map((category, index) => (
+          <DropdownMenuGroup key={category.id}>
             {index > 0 && <DropdownMenuSeparator />}
             <DropdownMenuLabel className="text-sm font-semibold">
               {category.name}
             </DropdownMenuLabel>
-            {category.items.map((item) => (
+            {category.items?.map((item: any) => (
               <DropdownMenuItem key={item.id} asChild>
-                <a href={item.path} className="cursor-pointer">
-                  {item.label}
+                <a href={`/category/${item.slug}`} className="cursor-pointer">
+                  {item.name}
                 </a>
               </DropdownMenuItem>
             ))}

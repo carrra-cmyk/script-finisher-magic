@@ -9,9 +9,38 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { US_LOCATIONS } from "@/data/locations";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export function LocationDropdown() {
+  const { data: locations = [] } = useQuery({
+    queryKey: ["locations"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("locations")
+        .select("*")
+        .eq("country", "USA")
+        .order("state")
+        .order("city");
+      
+      if (error) throw error;
+      
+      // Group by state
+      const grouped = data.reduce((acc: any, loc: any) => {
+        if (!acc[loc.state]) {
+          acc[loc.state] = [];
+        }
+        acc[loc.state].push(loc.city);
+        return acc;
+      }, {});
+      
+      return Object.entries(grouped).map(([state, cities]: [string, any]) => ({
+        state,
+        cities,
+      }));
+    },
+  });
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -22,21 +51,13 @@ export function LocationDropdown() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-64 max-h-[500px] overflow-y-auto bg-card z-50">
-        {US_LOCATIONS.map((location, index) => (
+        {locations.map((location: any, index: number) => (
           <DropdownMenuGroup key={location.state}>
             {index > 0 && <DropdownMenuSeparator />}
             <DropdownMenuLabel className="text-sm font-semibold">
               {location.state}
             </DropdownMenuLabel>
-            <DropdownMenuItem asChild>
-              <a
-                href={`/location/${location.capital.toLowerCase().replace(/\s+/g, "-")}`}
-                className="cursor-pointer text-xs"
-              >
-                {location.capital} (Capital)
-              </a>
-            </DropdownMenuItem>
-            {location.cities.map((city) => (
+            {location.cities.map((city: string) => (
               <DropdownMenuItem key={city} asChild>
                 <a
                   href={`/location/${city.toLowerCase().replace(/\s+/g, "-")}`}
