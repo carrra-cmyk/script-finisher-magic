@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Coins, Heart, Menu, User } from "lucide-react";
+import { Coins, Heart, Menu, User, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
+import { CategoryDropdown } from "@/components/CategoryDropdown";
+import { LocationDropdown } from "@/components/LocationDropdown";
 
 interface HeaderProps {
   isAuthenticated?: boolean;
@@ -24,14 +26,10 @@ export function Header({ isAuthenticated, loveCoins = 0, onMenuClick }: HeaderPr
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
-            <Link to="/" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
-              Browse
-            </Link>
-            <Link to="/categories" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-              Categories
-            </Link>
-            <Link to="/about" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+          <nav className="hidden md:flex items-center gap-3">
+            <CategoryDropdown />
+            <LocationDropdown />
+            <Link to="/about" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors px-3">
               About
             </Link>
           </nav>
@@ -40,6 +38,15 @@ export function Header({ isAuthenticated, loveCoins = 0, onMenuClick }: HeaderPr
           <div className="flex items-center gap-3">
             {isAuthenticated ? (
               <>
+                {/* Post Free Ad Button */}
+                <Button variant="default" size="sm" asChild className="gap-2">
+                  <Link to="/post">
+                    <Plus className="h-4 w-4" />
+                    <span className="hidden sm:inline">Post Free Ad</span>
+                    <span className="sm:hidden">Post</span>
+                  </Link>
+                </Button>
+
                 {/* Love Coins Balance */}
                 <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border">
                   <Coins className="h-4 w-4 text-primary" />
@@ -47,7 +54,7 @@ export function Header({ isAuthenticated, loveCoins = 0, onMenuClick }: HeaderPr
                 </div>
 
                 {/* Dashboard Button */}
-                <Button variant="default" size="sm" asChild>
+                <Button variant="outline" size="sm" asChild className="hidden lg:flex">
                   <Link to="/dashboard">Dashboard</Link>
                 </Button>
 

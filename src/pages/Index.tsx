@@ -114,10 +114,10 @@ const DEMO_LISTINGS = [
 ];
 
 const CATEGORIES = [
-  { name: "Escorts", count: 1243, icon: "💋" },
-  { name: "Massage", count: 567, icon: "💆" },
-  { name: "BDSM & Fetish", count: 432, icon: "⛓️" },
-  { name: "Content Creators", count: 891, icon: "📸" },
+  { name: "Seeking Connections", count: 1243, icon: "💕" },
+  { name: "Companionship Services", count: 567, icon: "✨" },
+  { name: "Wellness & Bodywork", count: 432, icon: "💆" },
+  { name: "Platonic & Activity", count: 891, icon: "🤝" },
 ];
 
 export default function Index() {
