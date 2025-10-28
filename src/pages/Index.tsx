@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { ListingGrid } from "@/components/ListingGrid";
@@ -125,6 +126,42 @@ export default function Index() {
   const [loveCoins, setLoveCoins] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+
+  // Fetch listings from database
+  const { data: dbListings = [], isLoading } = useQuery({
+    queryKey: ["listings"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("listings")
+        .select(`
+          *,
+          categories(name),
+          locations(city, state),
+          media(url, type, display_order)
+        `)
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+      if (error) throw error;
+
+      return data.map((listing: any) => ({
+        id: listing.id,
+        title: listing.title,
+        tagline: listing.tagline || "",
+        city: listing.locations?.city || "Location TBD",
+        price_tokens: listing.price_tokens || 0,
+        imageUrl: listing.media?.[0]?.url || "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&h=533&fit=crop",
+        is_highlighted: listing.is_highlighted || false,
+        is_special: listing.is_special || false,
+        tier: "basic" as const,
+        available_now_active: listing.available_now_active || false,
+      }));
+    },
+  });
+
+  // Use database listings if available, otherwise fallback to demo
+  const listings = dbListings.length > 0 ? dbListings : DEMO_LISTINGS;
 
   useEffect(() => {
     // Get initial session
@@ -254,7 +291,7 @@ export default function Index() {
             <Button variant="ghost">View All</Button>
           </div>
           <ListingGrid
-            listings={DEMO_LISTINGS.filter((l) => l.available_now_active)}
+            listings={listings.filter((l) => l.available_now_active)}
             onListingClick={(id) => navigate(`/listing/${id}`)}
           />
         </div>
@@ -271,7 +308,7 @@ export default function Index() {
             <Button variant="ghost">View All</Button>
           </div>
           <ListingGrid
-            listings={DEMO_LISTINGS}
+            listings={listings}
             onListingClick={(id) => navigate(`/listing/${id}`)}
           />
         </div>
