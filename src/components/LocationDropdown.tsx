@@ -18,7 +18,7 @@ interface LocationDropdownProps {
 }
 
 export function LocationDropdown({ onLocationSelect, selectedLocation }: LocationDropdownProps) {
-  const { data: locations = [] } = useQuery({
+  const { data: locations = [], isLoading } = useQuery({
     queryKey: ["locations"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -56,23 +56,33 @@ export function LocationDropdown({ onLocationSelect, selectedLocation }: Locatio
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-64 max-h-[500px] overflow-y-auto bg-card z-50">
-        {locations.map((location: any, index: number) => (
-          <DropdownMenuGroup key={location.state}>
-            {index > 0 && <DropdownMenuSeparator />}
-            <DropdownMenuLabel className="text-sm font-semibold">
-              {location.state}
-            </DropdownMenuLabel>
-            {location.cities.map((city: any) => (
-              <DropdownMenuItem 
-                key={city.id}
-                onClick={() => onLocationSelect?.(city.id)}
-                className="cursor-pointer text-xs"
-              >
-                {city.city}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuGroup>
-        ))}
+        {isLoading ? (
+          <div className="p-4 text-center text-sm text-muted-foreground">
+            Loading locations...
+          </div>
+        ) : locations.length === 0 ? (
+          <div className="p-4 text-center text-sm text-muted-foreground">
+            No locations available
+          </div>
+        ) : (
+          locations.map((location: any, index: number) => (
+            <DropdownMenuGroup key={location.state}>
+              {index > 0 && <DropdownMenuSeparator />}
+              <DropdownMenuLabel className="text-sm font-semibold">
+                {location.state}
+              </DropdownMenuLabel>
+              {location.cities?.map((city: any) => (
+                <DropdownMenuItem 
+                  key={city.id}
+                  onClick={() => onLocationSelect?.(city.id)}
+                  className="cursor-pointer text-xs"
+                >
+                  {city.city}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuGroup>
+          ))
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
