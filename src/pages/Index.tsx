@@ -125,21 +125,35 @@ export default function Index() {
   const [session, setSession] = useState<Session | null>(null);
   const [loveCoins, setLoveCoins] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // Fetch listings from database
   const { data: dbListings = [], isLoading } = useQuery({
-    queryKey: ["listings"],
+    queryKey: ["listings", selectedCategory, selectedLocation],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("listings")
         .select(`
           *,
-          categories(name),
-          locations(city, state),
+          categories(name, id),
+          locations(city, state, id),
           media(url, type, display_order)
         `)
-        .eq("is_active", true)
+        .eq("is_active", true);
+
+      // Apply category filter
+      if (selectedCategory) {
+        query = query.eq("category_id", selectedCategory);
+      }
+
+      // Apply location filter
+      if (selectedLocation) {
+        query = query.eq("location_id", selectedLocation);
+      }
+
+      const { data, error } = await query
         .order("created_at", { ascending: false })
         .limit(20);
 
@@ -204,6 +218,10 @@ export default function Index() {
       <Header
         isAuthenticated={!!session}
         loveCoins={loveCoins}
+        onCategorySelect={setSelectedCategory}
+        onLocationSelect={setSelectedLocation}
+        selectedCategory={selectedCategory}
+        selectedLocation={selectedLocation}
       />
 
       {/* Hero Section */}

@@ -12,7 +12,12 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export function LocationDropdown() {
+interface LocationDropdownProps {
+  onLocationSelect?: (locationId: string | null) => void;
+  selectedLocation?: string | null;
+}
+
+export function LocationDropdown({ onLocationSelect, selectedLocation }: LocationDropdownProps) {
   const { data: locations = [] } = useQuery({
     queryKey: ["locations"],
     queryFn: async () => {
@@ -30,7 +35,7 @@ export function LocationDropdown() {
         if (!acc[loc.state]) {
           acc[loc.state] = [];
         }
-        acc[loc.state].push(loc.city);
+        acc[loc.state].push(loc);
         return acc;
       }, {});
       
@@ -57,14 +62,13 @@ export function LocationDropdown() {
             <DropdownMenuLabel className="text-sm font-semibold">
               {location.state}
             </DropdownMenuLabel>
-            {location.cities.map((city: string) => (
-              <DropdownMenuItem key={city} asChild>
-                <a
-                  href={`/location/${city.toLowerCase().replace(/\s+/g, "-")}`}
-                  className="cursor-pointer text-xs"
-                >
-                  {city}
-                </a>
+            {location.cities.map((city: any) => (
+              <DropdownMenuItem 
+                key={city.id}
+                onClick={() => onLocationSelect?.(city.id)}
+                className="cursor-pointer text-xs"
+              >
+                {city.city}
               </DropdownMenuItem>
             ))}
           </DropdownMenuGroup>

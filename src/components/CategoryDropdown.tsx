@@ -12,7 +12,12 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export function CategoryDropdown() {
+interface CategoryDropdownProps {
+  onCategorySelect?: (categoryId: string | null) => void;
+  selectedCategory?: string | null;
+}
+
+export function CategoryDropdown({ onCategorySelect, selectedCategory }: CategoryDropdownProps) {
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
@@ -49,10 +54,12 @@ export function CategoryDropdown() {
               {category.name}
             </DropdownMenuLabel>
             {category.items?.map((item: any) => (
-              <DropdownMenuItem key={item.id} asChild>
-                <a href={`/category/${item.slug}`} className="cursor-pointer">
-                  {item.name}
-                </a>
+              <DropdownMenuItem 
+                key={item.id}
+                onClick={() => onCategorySelect?.(item.id)}
+                className="cursor-pointer"
+              >
+                {item.name}
               </DropdownMenuItem>
             ))}
           </DropdownMenuGroup>

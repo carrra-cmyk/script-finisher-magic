@@ -8,9 +8,21 @@ interface HeaderProps {
   isAuthenticated?: boolean;
   loveCoins?: number;
   onMenuClick?: () => void;
+  onCategorySelect?: (categoryId: string | null) => void;
+  onLocationSelect?: (locationId: string | null) => void;
+  selectedCategory?: string | null;
+  selectedLocation?: string | null;
 }
 
-export function Header({ isAuthenticated, loveCoins = 0, onMenuClick }: HeaderProps) {
+export function Header({ 
+  isAuthenticated, 
+  loveCoins = 0, 
+  onMenuClick,
+  onCategorySelect,
+  onLocationSelect,
+  selectedCategory,
+  selectedLocation 
+}: HeaderProps) {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
@@ -27,8 +39,14 @@ export function Header({ isAuthenticated, loveCoins = 0, onMenuClick }: HeaderPr
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-3">
-            <CategoryDropdown />
-            <LocationDropdown />
+            <CategoryDropdown 
+              onCategorySelect={onCategorySelect}
+              selectedCategory={selectedCategory}
+            />
+            <LocationDropdown 
+              onLocationSelect={onLocationSelect}
+              selectedLocation={selectedLocation}
+            />
             <Link to="/about" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors px-3">
               About
             </Link>
@@ -40,7 +58,7 @@ export function Header({ isAuthenticated, loveCoins = 0, onMenuClick }: HeaderPr
               <>
                 {/* Post Free Ad Button */}
                 <Button variant="default" size="sm" asChild className="gap-2">
-                  <Link to="/post">
+                  <Link to="/post-listing">
                     <Plus className="h-4 w-4" />
                     <span className="hidden sm:inline">Post Free Ad</span>
                     <span className="sm:hidden">Post</span>
