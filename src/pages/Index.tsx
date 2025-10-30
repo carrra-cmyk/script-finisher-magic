@@ -1,48 +1,28 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import type { Session } from "@supabase/supabase-js";
+import { useNavigate } from "react-router-dom";
+import { Heart } from "lucide-react";
 
 export default function Index() {
   const navigate = useNavigate();
-  const [session, setSession] = useState<Session | null>(null);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const { data: profile } = useQuery({
-    queryKey: ["profile", session?.user?.id],
-    queryFn: async () => {
-      if (!session?.user?.id) return null;
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", session.user.id)
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!session?.user?.id,
-  });
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header
-        isAuthenticated={!!session}
-        loveCoins={profile?.love_coin_balance || 0}
-      />
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
+              <Heart className="h-6 w-6 text-primary-foreground fill-current" />
+            </div>
+            <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Love Directory
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/auth")}>Sign In</Button>
+            <Button size="sm" onClick={() => navigate("/auth?mode=signup")}>Get Started</Button>
+          </div>
+        </div>
+      </header>
       
       <section className="border-b border-border bg-gradient-to-b from-background to-card/50">
         <div className="container mx-auto px-4 py-16">
